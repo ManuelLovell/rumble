@@ -124,7 +124,7 @@ function SetupOnChangeEvents()
                     log.innerText = `•    ` + message as string;
                     chatLog.append(author);
                     chatLog.append(log);
-                    unread = unread + 1;
+                    unread = !mine ? unread + 1 : unread;
                 }
                 else if (messageContainer.targetId == userId)
                 {
@@ -178,6 +178,10 @@ function SetupOnChangeEvents()
             {
                 await OBR.action.setBadgeBackgroundColor("yellow");
             }
+        }
+        else if (isOpen)
+        {
+            unread = 0;
         }
     });
 
