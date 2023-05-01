@@ -1,0 +1,13 @@
+{
+    "name": "Rumble!",
+    "version": "1.0.0",
+    "author": "Discord: Que?#5327",
+    "manifest_version": 1,
+    "action": {
+      "title": "Rumble!",
+      "icon": "/icon.svg",
+      "popover": "/",
+      "height": 600,
+      "width": 400
+    }
+  }
