@@ -27,6 +27,8 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 let userName = "";
 let userId = "";
 let userColor = "";
+let unread = 0;
+let whispered = false;
 let gamePlayers: IPlayer[] = [];
 let lastRumbleMessage: IChatLog = { chatlog: "", sender: "", created: "", color: "" };
 let lastClashmessage: IChatLog = { chatlog: "", sender: "", created: "", color: "" };
@@ -81,8 +83,9 @@ function IsThisOld(created: string): boolean
 function SetupOnChangeEvents()
 {
     const chatLog = document.querySelector<HTMLDivElement>('#chatLog')!;
-    OBR.scene.onMetadataChange((metadata) =>
+    OBR.scene.onMetadataChange(async (metadata) =>
     {
+        const isOpen = await OBR.action.isOpen();
         const TIME_STAMP = new Date().toLocaleTimeString();
 
         // Checks for own logs passing through
@@ -121,6 +124,7 @@ function SetupOnChangeEvents()
                     log.innerText = `•    ` + message as string;
                     chatLog.append(author);
                     chatLog.append(log);
+                    unread = unread + 1;
                 }
                 else if (messageContainer.targetId == userId)
                 {
@@ -133,6 +137,8 @@ function SetupOnChangeEvents()
                     log.innerText = `•    ` + message as string;
                     chatLog.append(author);
                     chatLog.append(log);
+                    unread = unread + 1;
+                    whispered = true;
                 }
 
             }
@@ -159,6 +165,18 @@ function SetupOnChangeEvents()
 
                 chatLog.append(author);
                 chatLog.append(log);
+                unread = unread + 1;
+            }
+        }
+
+        // Update Badge for unread if Action isn't open
+        if (!isOpen && unread > 0)
+        {
+            await OBR.action.setIcon("/icon-filled.svg");
+            await OBR.action.setBadgeText(unread.toString());
+            if (whispered)
+            {
+                await OBR.action.setBadgeBackgroundColor("yellow");
             }
         }
     });
@@ -176,6 +194,18 @@ function SetupOnChangeEvents()
     {
         gamePlayers = party.map(x => { return { id: x.id, name: x.name } });
         UpdatePlayerSelect();
+    });
+
+    OBR.action.onOpenChange(async (open) =>
+    {
+        if (open)
+        {
+            whispered = false;
+            unread = 0;
+            await OBR.action.setBadgeText(undefined);
+            await OBR.action.setBadgeBackgroundColor("#BB99FF");
+            await OBR.action.setIcon("/icon.svg");
+        }
     });
 }
 
