@@ -302,7 +302,8 @@ function ParseResultsToString(results: []): string
     results.forEach((roll: any) =>
     {
         diceRolled.push(`${roll.qty}${roll.sides}`);
-        total = + roll.value;
+        total += roll.value;
+        console.log(total);
     });
 
     return ` rolled (${diceRolled.join(", ")}) for ${total}!`;
