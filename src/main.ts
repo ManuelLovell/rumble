@@ -8,6 +8,7 @@ import './style.css';
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 <header id="headerContainer" class="headerContainer"></header>
 <section id="chatContainer" class="chatContainer">
+    <div id="diceContainer" class="diceCont"></div>
     <ul id="chatLog">
     </ul>
 </section>
@@ -309,7 +310,7 @@ function ParseResultsToString(results: []): string
 async function SetupDiceBox()
 {
     //dice test
-    diceBox = new DiceBox("#chatContainer", { id: "chatContainer", assetPath: "/assets/", scale: 15, gravity: 5, theme: 'default', themeColor: '#ff9294' });
+    diceBox = new DiceBox("#diceContainer", { id: "diceContainer", assetPath: "/assets/", scale: 15, gravity: 5, theme: 'default', themeColor: '#ff9294' });
 
     diceBox.init().then(() =>
     {

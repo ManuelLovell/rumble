@@ -83,15 +83,24 @@ h1 {
 canvas {
     z-index: 5;
     position: absolute;
+    width: 100%;
 }
 
 #buttonContainer {
     width: 100%;
 }
 
+.diceCont
+{
+    width: 100%;
+    height: 300px;
+    position: absolute;
+    top: 0;
+}
 .chatContainer {
     position: relative;
     overflow-y: scroll;
+    overflow-x: hidden;
     display: flex;
     flex-direction: column-reverse;
     height: calc(100% - 145px);
