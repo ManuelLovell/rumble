@@ -1,5 +1,5 @@
 import { Constants } from './constants';
-import { IChatLog, IPlayer } from './interfaces';
+import { IChatLog, IPlayer, ISafety } from './interfaces';
 import DiceUIPicker from './dice-ui';
 import OBR, { Metadata } from "@owlbear-rodeo/sdk";
 import DiceBox from "@3d-dice/dice-box";
@@ -19,6 +19,11 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
         <select name="players" id="playerSelect">
             <option value="everyone">Everyone</option>
         </select>
+        <div id="safetyButtons">Safety:
+            <button id="happyButton" type="button">✔</button>
+            <button id="waryButton" type="button">◯</button>
+            <button id="badButton" type="button">✕</button>
+        </div>
     </div>
     <div>
     <input id="chat-input" type="text" name="message" placeholder="Type Message ..." class="form-control">
@@ -50,9 +55,49 @@ OBR.onReady(async () =>
     gamePlayers = (await OBR.party.getPlayers()).map(x => { return { id: x.id, name: x.name } });
     SetupOnChangeEvents();
     SetupSendButtons();
+    SetupSafetyButtons();
     UpdatePlayerSelect();
     SetupDiceBox();
 });
+
+function SetupSafetyButtons()
+{
+    //Good
+    const goodGM = document.querySelector<HTMLDivElement>('#happyButton')! as HTMLInputElement;
+    goodGM.onclick = async function ()
+    {
+        const metadata: Metadata = {};
+        const now = new Date().toISOString();
+
+        metadata[`${Constants.EXTENSIONID}/metadata_chatSafety`] = { safety: "happy", created: now };
+
+        return await OBR.scene.setMetadata(metadata);
+    };
+
+    //Bad
+    const badGM = document.querySelector<HTMLDivElement>('#badButton')! as HTMLInputElement;
+    badGM.onclick = async function ()
+    {
+        const metadata: Metadata = {};
+        const now = new Date().toISOString();
+
+        metadata[`${Constants.EXTENSIONID}/metadata_chatSafety`] = { safety: "bad", created: now };
+
+        return await OBR.scene.setMetadata(metadata);
+    };
+
+    //Wary
+    const maybeGM = document.querySelector<HTMLDivElement>('#waryButton')! as HTMLInputElement;
+    maybeGM.onclick = async function ()
+    {
+        const metadata: Metadata = {};
+        const now = new Date().toISOString();
+
+        metadata[`${Constants.EXTENSIONID}/metadata_chatSafety`] = { safety: "wary", created: now };
+
+        return await OBR.scene.setMetadata(metadata);
+    };
+}
 
 function SetupSendButtons()
 {
@@ -173,6 +218,85 @@ function SetupOnChangeEvents()
                 chatLog.append(author);
                 chatLog.append(log);
                 unread = unread + 1;
+            }
+        }
+
+        if (metadata[`${Constants.EXTENSIONID}/metadata_chatSafety`] != undefined)
+        {
+            const playerRole = await OBR.player.getRole();
+            const safetyContainer = metadata[`${Constants.EXTENSIONID}/metadata_chatSafety`] as ISafety;
+            if (!IsThisOld(safetyContainer.created))
+            {
+                if (safetyContainer.safety == "bad")
+                {
+                    const author = document.createElement('li');
+                    const log = document.createElement('li');
+                    const TIME_STAMP = new Date().toLocaleTimeString();
+
+                    author.className = "rumbleAuthor clashLog";
+                    author.innerText = `[${TIME_STAMP}] - ❌ Full Stop ❌`;
+
+                    log.className = "clashLog";
+                    log.innerText = `🡆    Someone is concerned with the current situation. Talk it out.`;
+
+                    chatLog.append(author);
+                    chatLog.append(log);
+                    unread = unread + 1;
+                    whispered = true;
+                    OBR.popover.open({
+                        id: "com.battle-system.rumble",
+                        url: `/subindex/sub${safetyContainer.safety}.html`,
+                        height: 400,
+                        width: 400,
+                    });
+                }
+                if (safetyContainer.safety == "wary")
+                {
+                    const author = document.createElement('li');
+                    const log = document.createElement('li');
+                    const TIME_STAMP = new Date().toLocaleTimeString();
+
+                    author.className = "rumbleAuthor clashLog";
+                    author.innerText = `[${TIME_STAMP}] - 🟡 Let's be careful 🟡`;
+
+                    log.className = "clashLog";
+                    log.innerText = `🡆    Someone is starting to feel wary about what's going on.`;
+
+                    chatLog.append(author);
+                    chatLog.append(log);
+                    unread = unread + 1;
+                    whispered = true;
+
+                    OBR.popover.open({
+                        id: "com.battle-system.rumble",
+                        url: `/subindex/sub${safetyContainer.safety}.html`,
+                        height: 400,
+                        width: 400,
+                    });
+                }
+                if (playerRole == "GM" && safetyContainer.safety == "happy")
+                {
+                    const author = document.createElement('li');
+                    const log = document.createElement('li');
+                    const TIME_STAMP = new Date().toLocaleTimeString();
+
+                    author.className = "rumbleAuthor clashLog";
+                    author.innerText = `[${TIME_STAMP}] - ✅ Great Job! ✅`;
+
+                    log.className = "clashLog";
+                    log.innerText = `🡆    Someone has shown their approval!`;
+
+                    chatLog.append(author);
+                    chatLog.append(log);
+                    unread = unread + 1;
+
+                    OBR.popover.open({
+                        id: "com.battle-system.rumble",
+                        url: `/subindex/sub${safetyContainer.safety}.html`,
+                        height: 200,
+                        width: 200,
+                    });
+                }
             }
         }
 
@@ -301,13 +425,23 @@ function ParseResultsToString(results: []): string
     let total = 0;
     results.forEach((roll: any) =>
     {
-        diceRolled.push(`${roll.qty}${roll.sides}`);
+        let breakdown: string[] = [];
+        if (roll.rolls.length > 1)
+        {
+            roll.rolls.forEach((dice:any) =>
+            {
+                breakdown.push(dice.value);
+            });
+        }
+
+        diceRolled.push(`${roll.qty}${roll.sides}[${breakdown.join("-")}]`);
         total += roll.value;
         console.log(total);
     });
 
     return ` rolled (${diceRolled.join(", ")}) for ${total}!`;
 }
+
 async function SetupDiceBox()
 {
     //dice test
@@ -347,6 +481,12 @@ async function SetupDiceBox()
             rB.disabled = false;
             let messageResult = ParseResultsToString(results);
             await SendRolltoChatLog(messageResult);
+            await delay(1000);
+            diceBox.clear();
         }
     });
+}
+
+function delay(ms: number) {
+    return new Promise( resolve => setTimeout(resolve, ms) );
 }

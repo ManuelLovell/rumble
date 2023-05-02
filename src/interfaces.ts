@@ -14,3 +14,9 @@ export interface IPlayer
     id: string;
     name: string;
 }
+
+export interface ISafety
+{
+    safety: string;
+    created: string;
+}
