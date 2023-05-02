@@ -50,38 +50,78 @@ h1 {
     right: 0px;
 }
 
+.headerContainer {
+    overflow: hidden;
+    margin-top: 5px;
+    position: fixed;
+    /* Set the navbar to fixed position */
+    top: 0;
+    /* Position the navbar at the top of the page */
+    width: 100%;
+    height: 250px;
+    /* Full width */
+    z-index: 5;
+}
+
+#resetButton {
+    float: left;
+}
+
+#throwButton {
+    float: right;
+    position: relative;
+    top: 0;
+
+}
+
+#diceNotes {
+    z-index: 1;
+    text-align: center;
+}
+
+canvas {
+    z-index: 5;
+    position: absolute;
+}
+
+#buttonContainer {
+    width: 100%;
+}
+
 .chatContainer {
     position: relative;
     overflow-y: scroll;
     display: flex;
     flex-direction: column-reverse;
-    height: calc(100% - 65px);
+    height: calc(100% - 145px);
+    margin-top: 80px;
     width: 100%;
     padding: 5px;
 }
 
 .inputContainer {
     background: linear-gradient(180deg, #A73335, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0));
-    position:absolute;
+    position: absolute;
     padding: 2px;
     bottom: 0;
     width: 100%;
     height: 65px;
 }
-.itsMe
-{
+
+.itsMe {
     text-align: right;
 }
-.outline
-{
+
+.outline {
     border-radius: 8px;
-    background:linear-gradient(90deg, #6b2021, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0));
-    
+    background: linear-gradient(90deg, #6b2021, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0));
+
 }
-.clashLog
-{
+
+.clashLog {
     color: #ff9294;
 }
+
 #chat-input {
     width: 75%;
     height: 100%;
@@ -90,10 +130,11 @@ h1 {
     margin-left: 10px;
     float: left;
 }
-#targetSelect
-{
+
+#targetSelect {
     padding: 0px 0px 5px 10px;
 }
+
 button {
     background-color: transparent;
     border-radius: 8px;
@@ -108,10 +149,49 @@ button {
 }
 
 button:hover {
-    border-color: #fd0fb6;
+    border-color: #A73335;
 }
 
 button:focus,
 button:focus-visible {
     outline: 4px auto -webkit-focus-ring-color;
+}
+
+/* CSS */
+.button-47 {
+    display: inline-block;
+    font-size: 16px;
+    font-weight: 700;
+    color: white;
+    border: 3px solid #A73335;
+    cursor: pointer;
+    position: relative;
+    background-color: transparent;
+    text-decoration: none;
+    overflow: hidden;
+    z-index: 1;
+    font-family: inherit;
+    margin: 1px;
+}
+
+.button-47::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #A73335;
+    transform: translateX(-100%);
+    transition: all .3s;
+    z-index: -1;
+}
+
+.button-47:hover::before {
+    transform: translateX(0);
+}
+
+.button-47:disabled {
+    color: grey;
+    border: 3px solid grey;
 }

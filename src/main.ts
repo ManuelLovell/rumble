@@ -1,10 +1,13 @@
 import { Constants } from './constants';
 import { IChatLog, IPlayer } from './interfaces';
+import DiceUIPicker from './dice-ui';
 import OBR, { Metadata } from "@owlbear-rodeo/sdk";
+import DiceBox from "@3d-dice/dice-box";
 import './style.css';
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-<section class="chatContainer">
+<header id="headerContainer" class="headerContainer"></header>
+<section id="chatContainer" class="chatContainer">
     <ul id="chatLog">
     </ul>
 </section>
@@ -33,6 +36,8 @@ let gamePlayers: IPlayer[] = [];
 let lastRumbleMessage: IChatLog = { chatlog: "", sender: "", created: "", color: "" };
 let lastClashmessage: IChatLog = { chatlog: "", sender: "", created: "", color: "" };
 
+let diceBox;
+
 // TODO
 // Time stamp the messages to avoid showing old/stale on refresh?
 
@@ -45,6 +50,7 @@ OBR.onReady(async () =>
     SetupOnChangeEvents();
     SetupSendButtons();
     UpdatePlayerSelect();
+    SetupDiceBox();
 });
 
 function SetupSendButtons()
@@ -144,7 +150,7 @@ function SetupOnChangeEvents()
             }
         }
 
-        // Checks for Clash logs passing through - just a string, no sender
+        // Checks for Clash(Or Rumble Rolls) logs passing through - just a string, no sender
         if (metadata[`${Constants.CLASHID}/metadata_chatlog`] != undefined)
         {
             const messageContainer = metadata[`${Constants.CLASHID}/metadata_chatlog`] as IChatLog;
@@ -157,7 +163,7 @@ function SetupOnChangeEvents()
 
                 const author = document.createElement('li');
                 author.className = "rumbleAuthor clashLog";
-                author.innerText = `[${TIME_STAMP}] - Clash!`;
+                author.innerText = `[${TIME_STAMP}] - ${messageContainer.sender}`;
 
                 const log = document.createElement('li');
                 log.className = "clashLog";
@@ -264,4 +270,81 @@ async function SendtoChatLog(chatInput: HTMLInputElement): Promise<void>
         chatInput.value = "";
         return await OBR.scene.setMetadata(metadata);
     }
+}
+
+async function SendRolltoChatLog(roll: string): Promise<void>
+{
+    if (roll)
+    {
+        const metadata: Metadata = {};
+        const now = new Date().toISOString();
+
+        metadata[`${Constants.CLASHID}/metadata_chatlog`]
+            = {
+            chatlog: userName + roll,
+            sender: "Rumble!",
+            senderId: userId,
+            target: "",
+            targetId: "0000",
+            created: now,
+            color: userColor
+        };
+
+        return await OBR.scene.setMetadata(metadata);
+    }
+}
+
+function ParseResultsToString(results: []): string
+{
+    let diceRolled: string[] = [];
+    let total = 0;
+    results.forEach((roll: any) =>
+    {
+        diceRolled.push(`${roll.qty}${roll.sides}`);
+        total = + roll.value;
+    });
+
+    return ` rolled (${diceRolled.join(", ")}) for ${total}!`;
+}
+async function SetupDiceBox()
+{
+    //dice test
+    diceBox = new DiceBox("#chatContainer", { id: "chatContainer", assetPath: "/assets/", scale: 15, gravity: 5, theme: 'default', themeColor: '#ff9294' });
+
+    diceBox.init().then(() =>
+    {
+        const dicePicker = new DiceUIPicker({
+            target: '#headerContainer',
+            onSubmit: (notation) =>
+            {
+                const tB = document.querySelector<HTMLInputElement>('#throwButton')!;
+                const rB = document.querySelector<HTMLInputElement>('#resetButton')!;
+                tB.disabled = true;
+                rB.disabled = true;
+
+                diceBox.roll(notation);
+            },
+            onClear: () =>
+            {
+                diceBox.clear();
+            },
+            onReroll: (rolls) =>
+            {
+                // loop through parsed roll notations and send them to the Box
+                rolls.forEach(roll => diceBox.add(roll));
+            },
+        });
+        dicePicker.ready();
+
+        // pass dice rolls to Advanced Roller to handle
+        diceBox.onRollComplete = async (results) =>
+        {
+            const tB = document.querySelector<HTMLInputElement>('#throwButton')!;
+            const rB = document.querySelector<HTMLInputElement>('#resetButton')!;
+            tB.disabled = false;
+            rB.disabled = false;
+            let messageResult = ParseResultsToString(results);
+            await SendRolltoChatLog(messageResult);
+        }
+    });
 }
