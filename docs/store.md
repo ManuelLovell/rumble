@@ -2,8 +2,8 @@
 title: Rumble!
 description: Chat and Safety Cards
 author: Manuel DeJesus
-image: https://raw.githubusercontent.com/ManuelLovell/rumble/main/docs/preview.png
-icon: https://raw.githubusercontent.com/ManuelLovell/rumble/main/docs/logo.png
+image: https://raw.githubusercontent.com/ManuelLovell/rumble/master/docs/preview.png
+icon: https://raw.githubusercontent.com/ManuelLovell/rumble/master/docs/logo.png
 tags:
   - tool
   - other
@@ -26,11 +26,11 @@ Safety Cards work slightly different from each other, but are all anonymous.
 2. **Yellow Circle**. This is sent to everyone, popping up a yellow card center screen and adding a message into the chat log to let them know someone is wary of how things are going.
 3. **Red Cross**. This is also sent to everyone, like the circle. Just different messaging.
 
-![good view](https://raw.githubusercontent.com/ManuelLovell/rumble/main/docs/goodview.png)
+![good view](https://raw.githubusercontent.com/ManuelLovell/rumble/master/docs/goodview.png)
 
-![warn view](https://raw.githubusercontent.com/ManuelLovell/rumble/main/docs/warnview.png)
+![warn view](https://raw.githubusercontent.com/ManuelLovell/rumble/master/docs/warnview.png)
 
-![bad view](https://raw.githubusercontent.com/ManuelLovell/rumble/main/docs/badview.png)
+![bad view](https://raw.githubusercontent.com/ManuelLovell/rumble/master/docs/badview.png)
 
 **Support**
 
