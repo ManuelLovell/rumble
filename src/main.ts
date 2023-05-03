@@ -501,8 +501,8 @@ async function SetupDiceBox()
             rB.disabled = false;
             let messageResult = ParseResultsToString(results);
             await SendRolltoChatLog(messageResult);
-            await delay(1000);
-            diceBox.clear();
+            await delay(2000);
+            dicePicker.updateNotation(true);
         }
     });
 }
