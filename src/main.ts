@@ -47,13 +47,13 @@ let diceBox;
 // TODO
 // Time stamp the messages to avoid showing old/stale on refresh?
 
-OBR.onReady(async () =>
+await OBR.onReady(async () =>
 {
+    await SetupOnChangeEvents();
     userName = await OBR.player.getName();
     userId = await OBR.player.getId();
     userColor = await OBR.player.getColor();
     gamePlayers = (await OBR.party.getPlayers()).map(x => { return { id: x.id, name: x.name } });
-    SetupOnChangeEvents();
     SetupSendButtons();
     SetupSafetyButtons();
     UpdatePlayerSelect();
@@ -122,7 +122,7 @@ function SetupSendButtons()
 
 function IsThisOld(created: string): boolean
 {
-    const FIVE_SECONDS = 5 * 1000; // Mins - seconds - milliseconds
+    const FIVE_SECONDS = 3 * 1000; // Mins - seconds - milliseconds
 
     const currentTime: any = new Date();
     const messageTime: any = new Date(created);
@@ -132,10 +132,10 @@ function IsThisOld(created: string): boolean
     return pastDue;
 }
 
-function SetupOnChangeEvents()
+async function SetupOnChangeEvents()
 {
     const chatLog = document.querySelector<HTMLDivElement>('#chatLog')!;
-    OBR.scene.onMetadataChange(async (metadata) =>
+    await OBR.scene.onMetadataChange(async (metadata) =>
     {
         const isOpen = await OBR.action.isOpen();
         const TIME_STAMP = new Date().toLocaleTimeString();
@@ -300,6 +300,11 @@ function SetupOnChangeEvents()
             }
         }
 
+        if (isOpen)
+        {
+            whispered = false;
+            unread = 0;
+        }
         // Update Badge for unread if Action isn't open
         if (!isOpen && unread > 0)
         {
@@ -309,10 +314,6 @@ function SetupOnChangeEvents()
             {
                 await OBR.action.setBadgeBackgroundColor("yellow");
             }
-        }
-        else if (isOpen)
-        {
-            unread = 0;
         }
     });
 
@@ -426,7 +427,7 @@ function ParseResultsToString(results: []): string
     results.forEach((roll: any) =>
     {
         let breakdown: string[] = [];
-        if (roll.rolls.length > 1)
+        if (roll.rolls.length > 0)
         {
             roll.rolls.forEach((dice:any) =>
             {
@@ -434,7 +435,7 @@ function ParseResultsToString(results: []): string
             });
         }
 
-        diceRolled.push(`${roll.qty}${roll.sides}[${breakdown.join("-")}]`);
+        diceRolled.push(`${roll.qty}${roll.sides} → [${breakdown.join("-")}]`);
         total += roll.value;
         console.log(total);
     });
