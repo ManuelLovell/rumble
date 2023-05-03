@@ -204,20 +204,39 @@ async function SetupOnChangeEvents()
                 || lastClashmessage.sender != messageContainer.sender)
                 && (!IsThisOld(messageContainer.created)))
             {
-                lastClashmessage = messageContainer;
-                const message = messageContainer.chatlog;
+                if (messageContainer.targetId == userId)
+                {
+                    lastClashmessage = messageContainer;
+                    const message = messageContainer.chatlog;
 
-                const author = document.createElement('li');
-                author.className = "rumbleAuthor clashLog";
-                author.innerText = `[${TIME_STAMP}] - ${messageContainer.sender}`;
+                    const author = document.createElement('li');
+                    author.className = "rumbleAuthor clashLog";
+                    author.innerText = `[${TIME_STAMP}] - ${messageContainer.sender} to [You]`;
 
-                const log = document.createElement('li');
-                log.className = "clashLog";
-                log.innerText = `🡆    ` + message as string;
+                    const log = document.createElement('li');
+                    log.className = "clashLog";
+                    log.innerText = `🡆    ` + message as string;
 
-                chatLog.append(author);
-                chatLog.append(log);
-                unread = unread + 1;
+                    chatLog.append(author);
+                    chatLog.append(log);
+                }
+                else if (messageContainer.targetId == "0000")
+                {
+                    lastClashmessage = messageContainer;
+                    const message = messageContainer.chatlog;
+
+                    const author = document.createElement('li');
+                    author.className = "rumbleAuthor clashLog";
+                    author.innerText = `[${TIME_STAMP}] - ${messageContainer.sender}`;
+
+                    const log = document.createElement('li');
+                    log.className = "clashLog";
+                    log.innerText = `🡆    ` + message as string;
+
+                    chatLog.append(author);
+                    chatLog.append(log);
+                    unread = unread + 1;
+                }
             }
         }
 
@@ -429,7 +448,7 @@ function ParseResultsToString(results: []): string
         let breakdown: string[] = [];
         if (roll.rolls.length > 0)
         {
-            roll.rolls.forEach((dice:any) =>
+            roll.rolls.forEach((dice: any) =>
             {
                 breakdown.push(dice.value);
             });
@@ -488,6 +507,7 @@ async function SetupDiceBox()
     });
 }
 
-function delay(ms: number) {
-    return new Promise( resolve => setTimeout(resolve, ms) );
+function delay(ms: number)
+{
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
