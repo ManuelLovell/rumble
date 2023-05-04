@@ -42,12 +42,18 @@ h1 {
 
 #app {
     overflow-y: hidden;
+    overflow-x: hidden;
     position: absolute;
-    margin: 0;
+    margin: 1px;
     top: 0px;
     left: 0px;
     bottom: 0px;
     right: 0px;
+    width:499px;
+    border:#6b2021;
+    border-radius: 16px;
+    border-style: solid;
+    border-width: 2px;
 }
 
 .headerContainer {
@@ -79,7 +85,9 @@ h1 {
     z-index: 1;
     text-align: center;
 }
-
+.dice{
+    padding-left: 5px;
+}
 canvas {
     z-index: 5;
     position: absolute;
@@ -88,6 +96,8 @@ canvas {
 
 #buttonContainer {
     width: 100%;
+    padding: 5px;
+    padding-right: 10px;
 }
 
 .diceCont
@@ -192,7 +202,8 @@ button:focus-visible {
     font-size: 16px;
     font-weight: 700;
     color: white;
-    border: 3px solid #A73335;
+    background: linear-gradient(180deg, #A73335, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0));
+    border: 3px solid #6b2021;
     cursor: pointer;
     position: relative;
     background-color: transparent;
@@ -200,7 +211,7 @@ button:focus-visible {
     overflow: hidden;
     z-index: 1;
     font-family: inherit;
-    margin: 1px;
+    margin: 0;
 }
 
 .button-47::before {
@@ -224,3 +235,22 @@ button:focus-visible {
     color: grey;
     border: 3px solid grey;
 }
+/* custom scrollbar */
+::-webkit-scrollbar {
+    width: 20px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background-color: #A73335;
+    border-radius: 20px;
+    border: 6px solid transparent;
+    background-clip: content-box;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: #ce7b7d;
+  }
