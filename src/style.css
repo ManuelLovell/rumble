@@ -4,16 +4,53 @@
     font-weight: 400;
 
     color-scheme: dark;
-    color: rgba(255, 255, 255, 0.87);
-    background-color: #242424;
+    color: var(--light-letters);
+    background-color: var(--dark-background);
 
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     -webkit-text-size-adjust: 100%;
+    --dark-background: #242424;
+    --light-letters: rgb(224, 224, 224);
+    --invert: none;
+    --invert-click: invert(52%) sepia(81%) saturate(5333%) hue-rotate(331deg) brightness(90%) contrast(88%);
+    --slider-color: #ccc;
+    --monster-red: darkred;
+    --turn-highlight: rgb(87, 5, 5);
+    --safety-buttons: #6b2021;
+    --tooltip-background: none;
+    --clash-log: #ff9294;
+    --chat-input:rgb(68, 68, 68);
 }
 
+@media (prefers-color-scheme: light)
+{
+    :root{
+        --dark-background: #f3f3fc;
+        --light-letters: rgb(44, 44, 44);
+        --invert: brightness(75%);
+        --invert-click: none;
+        --slider-color: #4b4b4b;
+        --monster-red: rgb(214, 161, 161);
+        --turn-highlight: rgb(240, 115, 115);
+        --tooltip-background: rgb(161, 161, 161);
+        --clash-log: #a35152;
+        --safety-buttons: #dda3a4;
+        --chat-input:rgb(238, 229, 229);
+    }
+}
+
+#playerSelect,
+.chatInput{
+    color: var(--light-letters);
+    background-color: var(--chat-input);
+}
+.rumbleAuthor{
+    filter: var(--invert);
+
+}
 a {
     font-weight: 500;
     color: #fd0fb6;
@@ -139,7 +176,7 @@ canvas {
 }
 
 .clashLog {
-    color: #ff9294;
+    color: var(--clash-log);
 }
 
 #chat-input {
@@ -156,7 +193,7 @@ canvas {
 #happyButton,#waryButton,#badButton{
     height: 25px;
     line-height: 10px;
-    background-color: #6b2021;
+    background-color: var(--safety-buttons);
     margin-left: 2px;
 }
 #happyButton{
@@ -176,6 +213,7 @@ canvas {
 
 button {
     background-color: transparent;
+    color: var(--light-letters);
     border-radius: 8px;
     border: 1px solid grey;
     padding: 4px 16px 4px 16px;
@@ -201,7 +239,7 @@ button:focus-visible {
     display: inline-block;
     font-size: 16px;
     font-weight: 700;
-    color: white;
+    color: var(--light-letters);
     background: linear-gradient(180deg, #A73335, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0));
     border: 3px solid #6b2021;
     cursor: pointer;

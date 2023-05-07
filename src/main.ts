@@ -26,7 +26,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
         </div>
     </div>
     <div>
-    <input id="chat-input" type="text" name="message" placeholder="Type Message ..." class="form-control">
+    <input id="chat-input" class="chatInput" type="text" name="message" placeholder="Type Message ..." class="form-control">
         <span>
             <button id="chat-button" type="button" class="button">Send</button>
         </span>
