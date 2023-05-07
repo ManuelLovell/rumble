@@ -3,6 +3,7 @@ import { IChatLog, IPlayer, ISafety } from './interfaces';
 import DiceUIPicker from './dice-ui';
 import OBR, { Metadata } from "@owlbear-rodeo/sdk";
 import DiceBox from "@3d-dice/dice-box";
+import * as Utilities from "./utilities";
 import './style.css';
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
@@ -49,6 +50,14 @@ let diceBox;
 
 await OBR.onReady(async () =>
 {
+    // Set theme accordingly
+    const theme = await OBR.theme.getTheme();
+    Utilities.SetThemeMode(theme, document);
+    OBR.theme.onChange((theme) =>
+    {
+        Utilities.SetThemeMode(theme, document);
+    })
+    
     await SetupOnChangeEvents();
     userName = await OBR.player.getName();
     userId = await OBR.player.getId();
