@@ -2,7 +2,7 @@
     "name": "Rumble!",
     "version": "1.0.0",
     "author": "Discord: Que?#5327",
-    "icon": "/docs/logo.png",
+    "icon": "/logo.png",
     "manifest_version": 1,
     "action": {
       "title": "Rumble!",
