@@ -6,6 +6,7 @@ import DiceBox from "@3d-dice/dice-box";
 import * as Utilities from "./utilities";
 import './style.css';
 
+const mobile = window.innerWidth < Constants.MOBILEWIDTH;
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 <header id="headerContainer" class="headerContainer"></header>
 <section id="chatContainer" class="chatContainer">
@@ -15,12 +16,12 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 </section>
 <div class="inputContainer">
     <div id="targetSelect">
-        <label for="players">Send Message To:</label>
+        <label for="players">${mobile ? "Send:" : "Send Message To:"}</label>
 
         <select name="players" id="playerSelect">
             <option value="everyone">Everyone</option>
         </select>
-        <div id="safetyButtons">Safety:
+        <div id="safetyButtons">${mobile ? "" : "Safety:"}
             <button id="happyButton" type="button">✔</button>
             <button id="waryButton" type="button">◯</button>
             <button id="badButton" type="button">✕</button>

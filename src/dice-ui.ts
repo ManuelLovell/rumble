@@ -1,4 +1,5 @@
 import DiceParser from '@3d-dice/dice-parser-interface'
+import { Constants } from './constants';
 
 const noop = () => { }
 
@@ -47,6 +48,7 @@ class DiceUIPicker
     
     constructor(options)
     {
+        const mobile = window.innerWidth <  Constants.MOBILEWIDTH;
         this.baseMessage = "Use Buttons to Roll";
         this.target = options.target ? document.querySelector(options.target) : document.body
         this.elem = this.elem = document.createRange().createContextualFragment(`
@@ -62,8 +64,8 @@ class DiceUIPicker
                         <button class="button-47" value="d100">D100</button>
                     </div>
                     <div id="buttonContainer">
-                        <button id="resetButton" class="button-47" type="reset">Clear</button>
-                        <button id="throwButton" class="button-47"type="submit">Throw</button>
+                        <button id="resetButton" class="button-47" type="reset">${mobile ? "🚫" : "Clear"}</button>
+                        <button id="throwButton" class="button-47"type="submit">${mobile ? "🎲" : "Throw"}</button>
                         <div id="diceNotes" class="output">${this.baseMessage}</div>
                     </div>
                 </form>
