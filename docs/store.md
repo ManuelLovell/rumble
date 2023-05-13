@@ -1,14 +1,14 @@
 ---
 title: Rumble!
 description: Chat and Safety Cards
-author: Manuel DeJesus
-image: https://raw.githubusercontent.com/ManuelLovell/rumble/master/docs/preview.png
-icon: https://raw.githubusercontent.com/ManuelLovell/rumble/master/docs/logo.png
+author: Battle-System
+image: https://battle-system.com/owlbear/rumble-docs/preview.png
+icon: https://battle-system.com/owlbear/rumble-docs/logo.png
 tags:
   - tool
   - other
-manifest: https://rumble-chat.onrender.com/manifest.json
-learn-more: mdjxbl+owlbear@gmail.com
+manifest: https://rumble.battle-system.com/manifest.json
+learn-more: manuel@battle-system.com
 ---
 
 # Rumble! Chat
@@ -26,11 +26,11 @@ Safety Cards work slightly different from each other, but are all anonymous.
 2. **Yellow Circle**. This is sent to everyone, popping up a yellow card center screen and adding a message into the chat log to let them know someone is wary of how things are going.
 3. **Red Cross**. This is also sent to everyone, like the circle. Just different messaging.
 
-![good view](https://raw.githubusercontent.com/ManuelLovell/rumble/master/docs/goodview.png)
+![good view](https://battle-system.com/owlbear/rumble-docs/goodview.png)
 
-![warn view](https://raw.githubusercontent.com/ManuelLovell/rumble/master/docs/warnview.png)
+![warn view](https://battle-system.com/owlbear/rumble-docs/warnview.png)
 
-![bad view](https://raw.githubusercontent.com/ManuelLovell/rumble/master/docs/badview.png)
+![bad view](https://battle-system.com/owlbear/rumble-docs/badview.png)
 
 **Support**
 
