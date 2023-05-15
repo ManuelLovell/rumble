@@ -20,15 +20,17 @@
     --monster-red: darkred;
     --turn-highlight: rgb(87, 5, 5);
     --safety-buttons: #6b2021;
+    --safety-buttons-width: "";
     --tooltip-background: none;
     --clash-log: #ff9294;
     --chat-input: rgb(68, 68, 68);
-    --chat-input-width: 75%;
+    --chat-input-width: 80%;
     --app-width: 499px;
-    --header-min-width:500px;
+    --header-min-width: 500px;
     --roller-padding: 4px 16px 4px 16px;
     --roller-font-weight: 700;
     --roller-button-width: ;
+    --buttons-padding: 4px 16px 4px 16px;
 }
 
 @media (prefers-color-scheme: light) {
@@ -49,12 +51,14 @@
 
 @media only screen and (max-width: 495px) {
     :root {
-        --chat-input-width: 70%;
-        --app-width: 339px;
-        --header-min-width:340px;
+        --chat-input-width: 75%;
+        --app-width: 300px;
+        --header-min-width: 300px;
         --roller-padding: 4px 0 4px 0px;
         --roller-font-weight: 400;
-        --roller-button-width: 43px;
+        --roller-button-width: 42px;
+        --safety-buttons-width: 36px;
+        --buttons-padding: 4px 4px 4px 4px;
     }
 }
 
@@ -96,6 +100,7 @@ h1 {
 }
 
 #app {
+    z-index: 1;
     overflow-y: hidden;
     overflow-x: hidden;
     position: absolute;
@@ -122,7 +127,7 @@ h1 {
     height: 250px;
     min-width: var(--header-min-width);
     /* Full width */
-    z-index: 5;
+    z-index: 6;
 }
 
 #resetButton {
@@ -140,11 +145,15 @@ h1 {
     z-index: 1;
     text-align: center;
 }
-
 .dice {
     padding-left: 5px;
 }
 
+.center {
+    text-align: center;
+    display: flex;
+    padding-left: 0px;
+}
 canvas {
     z-index: 5;
     position: absolute;
@@ -219,17 +228,19 @@ canvas {
     line-height: 10px;
     background-color: var(--safety-buttons);
     margin-left: 2px;
+    width: var(--safety-buttons-width);
+    padding: var(--buttons-padding);
 }
 
-#happyButton:not(.disabled)  {
+#happyButton:not(.disabled) {
     color: green;
 }
 
-#waryButton:not(.disabled)  {
+#waryButton:not(.disabled) {
     color: yellow;
 }
 
-#badButton:not(.disabled)  {
+#badButton:not(.disabled) {
     color: red;
 }
 
@@ -243,7 +254,7 @@ button {
     color: var(--light-letters);
     border-radius: 8px;
     border: 1px solid grey;
-    padding: 4px 16px 4px 16px;
+    padding: var(--buttons-padding);
     font-size: 1em;
     font-weight: 500;
     font-family: inherit;

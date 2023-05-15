@@ -54,14 +54,15 @@ class DiceUIPicker
         this.elem = this.elem = document.createRange().createContextualFragment(`
             <div class="dice-picker">
                 <form>
-                    <div class="dice">
-                        <button class="button-47" value="d4">D4</button>
-                        <button class="button-47" value="d6">D6</button>
-                        <button class="button-47" value="d8">D8</button>
-                        <button class="button-47" value="d10">D10</button>
-                        <button class="button-47" value="d12">D12</button>
-                        <button class="button-47" value="d20">D20</button>
-                        <button class="button-47" value="d100">D100</button>
+                    <div class="dice${mobile? " center" : ""}">
+                        <button class="button-47" value="d4">${mobile ? "4" : "D4"}</button>
+                        <button class="button-47" value="d6">${mobile ? "6" : "D6"}</button>
+                        <button class="button-47" value="d8">${mobile ? "8" : "D8"}</button>
+                        ${mobile ? "</br>" : ""}
+                        <button class="button-47" value="d10">${mobile ? "10" : "D10"}</button>
+                        <button class="button-47" value="d12">${mobile ? "12" : "D12"}</button>
+                        <button class="button-47" value="d20">${mobile ? "20" : "D20"}</button>
+                        <button class="button-47" value="d100">${mobile ? "100" : "D100"}</button>
                     </div>
                     <div id="buttonContainer">
                         <button id="resetButton" class="button-47" type="reset">${mobile ? "🚫" : "Clear"}</button>
