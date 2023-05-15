@@ -221,15 +221,15 @@ canvas {
     margin-left: 2px;
 }
 
-#happyButton {
+#happyButton:not(.disabled)  {
     color: green;
 }
 
-#waryButton {
+#waryButton:not(.disabled)  {
     color: yellow;
 }
 
-#badButton {
+#badButton:not(.disabled)  {
     color: red;
 }
 
@@ -252,7 +252,7 @@ button {
     transition: border-color 0.25s;
 }
 
-button:hover {
+button:hover:not(.disabled) {
     border-color: #A73335;
 }
 

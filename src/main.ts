@@ -35,6 +35,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
     </div>
 </div>
 `
+let sceneReady = false;
 let userName = "";
 let userId = "";
 let userColor = "";
@@ -46,9 +47,6 @@ let lastClashmessage: IChatLog = { chatlog: "", sender: "", created: "", color: 
 
 let diceBox;
 
-// TODO
-// Time stamp the messages to avoid showing old/stale on refresh?
-
 await OBR.onReady(async () =>
 {
     // Set theme accordingly
@@ -58,7 +56,16 @@ await OBR.onReady(async () =>
     {
         Utilities.SetThemeMode(theme, document);
     })
-    
+
+    sceneReady = await OBR.scene.isReady();
+    ToggleChatInputs(sceneReady);
+    // If no Scene is open, disable chat
+    OBR.scene.onReadyChange((ready) =>
+    {
+        sceneReady = ready;
+        ToggleChatInputs(ready);
+    });
+
     await SetupOnChangeEvents();
     userName = await OBR.player.getName();
     userId = await OBR.player.getId();
@@ -69,6 +76,27 @@ await OBR.onReady(async () =>
     UpdatePlayerSelect();
     SetupDiceBox();
 });
+
+function ToggleChatInputs(ready: boolean): void
+{
+    const chatInput = <HTMLInputElement>document.getElementById("chat-input");
+    const chatButton = <HTMLButtonElement>document.getElementById("chat-button");
+    const happyButton = <HTMLButtonElement>document.getElementById("happyButton");
+    const waryButton = <HTMLButtonElement>document.getElementById("waryButton");
+    const badButton = <HTMLButtonElement>document.getElementById("badButton");
+
+    chatInput.disabled = !ready;
+    chatButton.disabled = !ready;
+    chatButton.className = ready ? "button" : "button disabled";
+    chatInput.placeholder = ready ? "Type Message ..." : "Disabled until Scene Ready.";
+
+    happyButton.disabled = !ready;
+    happyButton.className = ready ? "" : "disabled";
+    waryButton.disabled = !ready;
+    waryButton.className = ready ? "" : "disabled";
+    badButton.disabled = !ready;
+    badButton.className = ready ? "" : "disabled";
+}
 
 function SetupSafetyButtons()
 {
@@ -429,6 +457,8 @@ async function SendtoChatLog(chatInput: HTMLInputElement): Promise<void>
 
 async function SendRolltoChatLog(roll: string): Promise<void>
 {
+    if (!sceneReady) return;
+
     if (roll)
     {
         const metadata: Metadata = {};
@@ -466,7 +496,6 @@ function ParseResultsToString(results: []): string
 
         diceRolled.push(`${roll.qty}${roll.sides} → [${breakdown.join("-")}]`);
         total += roll.value;
-        console.log(total);
     });
 
     return ` rolled (${diceRolled.join(", ")}) for ${total}!`;
