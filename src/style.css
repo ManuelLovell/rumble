@@ -29,7 +29,7 @@
     --header-min-width: 500px;
     --roller-padding: 4px 16px 4px 16px;
     --roller-font-weight: 700;
-    --roller-button-width: ;
+    --roller-button-width: "";
     --buttons-padding: 4px 16px 4px 16px;
 }
 
@@ -52,11 +52,11 @@
 @media only screen and (max-width: 495px) {
     :root {
         --chat-input-width: 75%;
-        --app-width: 300px;
-        --header-min-width: 300px;
+        --app-width: 99.8%;
+        --header-min-width: 100%;
         --roller-padding: 4px 0 4px 0px;
         --roller-font-weight: 400;
-        --roller-button-width: 42px;
+        --roller-button-width: 15%;
         --safety-buttons-width: 36px;
         --buttons-padding: 4px 4px 4px 4px;
     }
@@ -150,9 +150,10 @@ h1 {
 }
 
 .center {
-    text-align: center;
     display: flex;
+    justify-content: space-around;
     padding-left: 0px;
+    padding-right:5px;
 }
 canvas {
     z-index: 5;
