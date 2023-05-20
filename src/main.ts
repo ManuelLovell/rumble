@@ -44,6 +44,7 @@ let whispered = false;
 let gamePlayers: IPlayer[] = [];
 let lastRumbleMessage: IChatLog = { chatlog: "", sender: "", created: "", color: "" };
 let lastClashmessage: IChatLog = { chatlog: "", sender: "", created: "", color: "" };
+let lastFriendmessage: IChatLog = { chatlog: "", sender: "", created: "", color: "" };
 
 let diceBox;
 
@@ -270,6 +271,50 @@ async function SetupOnChangeEvents()
                     const log = document.createElement('li');
                     log.className = "clashLog";
                     log.innerText = `🡆    ` + message as string;
+
+                    chatLog.append(author);
+                    chatLog.append(log);
+                    unread = unread + 1;
+                }
+            }
+        }
+
+        // Checks for Outside Extension logs passing through
+        if (metadata[`${Constants.OUTSIDEID}/metadata_chatlog`] != undefined)
+        {
+            const messageContainer = metadata[`${Constants.OUTSIDEID}/metadata_chatlog`] as IChatLog;
+            if ((lastFriendmessage.chatlog != messageContainer.chatlog
+                || lastFriendmessage.sender != messageContainer.sender)
+                && (!IsThisOld(messageContainer.created)))
+            {
+                if (messageContainer.targetId == userId)
+                {
+                    lastFriendmessage = messageContainer;
+                    const message = messageContainer.chatlog;
+
+                    const author = document.createElement('li');
+                    author.className = "rumbleAuthor friendLog";
+                    author.innerText = `[${TIME_STAMP}] - ${messageContainer.sender} to [You]`;
+
+                    const log = document.createElement('li');
+                    log.className = "friendLog";
+                    log.innerText = `🢥    ` + message as string;
+
+                    chatLog.append(author);
+                    chatLog.append(log);
+                }
+                else if (messageContainer.targetId == "0000")
+                {
+                    lastFriendmessage = messageContainer;
+                    const message = messageContainer.chatlog;
+
+                    const author = document.createElement('li');
+                    author.className = "rumbleAuthor friendLog";
+                    author.innerText = `[${TIME_STAMP}] - ${messageContainer.sender}`;
+
+                    const log = document.createElement('li');
+                    log.className = "friendLog";
+                    log.innerText = `🢥    ` + message as string;
 
                     chatLog.append(author);
                     chatLog.append(log);

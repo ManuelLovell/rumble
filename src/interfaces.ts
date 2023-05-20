@@ -1,11 +1,11 @@
 export interface IChatLog
 {
-    chatlog: string;
-    sender?: string;
-    senderId?: string;
-    target?: string;
-    targetId?: string;
-    created: string;
+    chatlog: string; // Message
+    sender?: string; // Sender Name
+    senderId?: string; // Sender OBR Id
+    target?: string; // Target Name
+    targetId?: string; // Target OBR Id
+    created: string; // new Date().toISOString();
     color: string;
 }
 

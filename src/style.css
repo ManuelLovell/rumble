@@ -23,6 +23,7 @@
     --safety-buttons-width: "";
     --tooltip-background: none;
     --clash-log: #ff9294;
+    --friend-log: #a292ff;
     --chat-input: rgb(68, 68, 68);
     --chat-input-width: 80%;
     --app-width: 499px;
@@ -44,6 +45,7 @@
         --turn-highlight: rgb(240, 115, 115);
         --tooltip-background: rgb(161, 161, 161);
         --clash-log: #a35152;
+        --friend-log: #554b8d;
         --safety-buttons: #dda3a4;
         --chat-input: rgb(238, 229, 229);
     }
@@ -207,6 +209,11 @@ canvas {
 
 .clashLog {
     color: var(--clash-log);
+}
+
+
+.friendLog {
+    color: var(--friend-log);
 }
 
 #chat-input {
