@@ -7,6 +7,7 @@ icon: https://battle-system.com/owlbear/rumble-docs/logo.png
 tags:
   - tool
   - other
+  - dice
 manifest: https://rumble.battle-system.com/manifest.json
 learn-more: manuel@battle-system.com
 ---
