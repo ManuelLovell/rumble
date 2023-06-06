@@ -33,9 +33,8 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
             <button id="chat-button" type="button" class="button">Send</button>
         </span>
     </div>
-</div>
-`
-let sceneReady = false;
+</div>`
+
 let userName = "";
 let userId = "";
 let userColor = "";
@@ -58,15 +57,6 @@ await OBR.onReady(async () =>
         Utilities.SetThemeMode(theme, document);
     })
 
-    sceneReady = await OBR.scene.isReady();
-    ToggleChatInputs(sceneReady);
-    // If no Scene is open, disable chat
-    OBR.scene.onReadyChange((ready) =>
-    {
-        sceneReady = ready;
-        ToggleChatInputs(ready);
-    });
-
     await SetupOnChangeEvents();
     userName = await OBR.player.getName();
     userId = await OBR.player.getId();
@@ -77,27 +67,6 @@ await OBR.onReady(async () =>
     UpdatePlayerSelect();
     SetupDiceBox();
 });
-
-function ToggleChatInputs(ready: boolean): void
-{
-    const chatInput = <HTMLInputElement>document.getElementById("chat-input");
-    const chatButton = <HTMLButtonElement>document.getElementById("chat-button");
-    const happyButton = <HTMLButtonElement>document.getElementById("happyButton");
-    const waryButton = <HTMLButtonElement>document.getElementById("waryButton");
-    const badButton = <HTMLButtonElement>document.getElementById("badButton");
-
-    chatInput.disabled = !ready;
-    chatButton.disabled = !ready;
-    chatButton.className = ready ? "button" : "button disabled";
-    chatInput.placeholder = ready ? "Type Message ..." : "Disabled until Scene Ready.";
-
-    happyButton.disabled = !ready;
-    happyButton.className = ready ? "" : "disabled";
-    waryButton.disabled = !ready;
-    waryButton.className = ready ? "" : "disabled";
-    badButton.disabled = !ready;
-    badButton.className = ready ? "" : "disabled";
-}
 
 function SetupSafetyButtons()
 {
@@ -110,7 +79,7 @@ function SetupSafetyButtons()
 
         metadata[`${Constants.EXTENSIONID}/metadata_chatSafety`] = { safety: "happy", created: now };
 
-        return await OBR.scene.setMetadata(metadata);
+        return await OBR.player.setMetadata(metadata);
     };
 
     //Bad
@@ -122,7 +91,7 @@ function SetupSafetyButtons()
 
         metadata[`${Constants.EXTENSIONID}/metadata_chatSafety`] = { safety: "bad", created: now };
 
-        return await OBR.scene.setMetadata(metadata);
+        return await OBR.player.setMetadata(metadata);
     };
 
     //Wary
@@ -134,7 +103,7 @@ function SetupSafetyButtons()
 
         metadata[`${Constants.EXTENSIONID}/metadata_chatSafety`] = { safety: "wary", created: now };
 
-        return await OBR.scene.setMetadata(metadata);
+        return await OBR.player.setMetadata(metadata);
     };
 }
 
@@ -173,258 +142,14 @@ function IsThisOld(created: string): boolean
 
 async function SetupOnChangeEvents()
 {
-    const chatLog = document.querySelector<HTMLDivElement>('#chatLog')!;
-    await OBR.scene.onMetadataChange(async (metadata) =>
-    {
-        const isOpen = await OBR.action.isOpen();
-        const TIME_STAMP = new Date().toLocaleTimeString();
-
-        // Checks for own logs passing through
-        if (metadata[`${Constants.EXTENSIONID}/metadata_chatlog`] != undefined)
-        {
-            const messageContainer = metadata[`${Constants.EXTENSIONID}/metadata_chatlog`] as IChatLog;
-
-            if ((lastRumbleMessage.chatlog != messageContainer.chatlog
-                || lastRumbleMessage.sender != messageContainer.sender)
-                && (!IsThisOld(messageContainer.created)))
-            {
-                lastRumbleMessage = messageContainer;
-                const message = messageContainer.chatlog;
-                lastRumbleMessage = messageContainer;
-
-                // Flag to see if you're the sender
-                const mine = messageContainer.senderId == userId;
-                const author = document.createElement('li');
-                const log = document.createElement('li');
-
-                const itMe = mine ? " itsMe" : "";
-
-                // If you're the sender, or it's being sent to everyone.
-                if (messageContainer.senderId == userId
-                    || messageContainer.targetId == "0000")
-                {
-                    // This is a whisper
-                    const secret = mine && (messageContainer.targetId != "0000")
-                        ? ` to [${messageContainer.target}]` : "";
-
-                    author.className = "rumbleAuthor" + itMe;
-                    author.style.color = messageContainer.color;
-                    author.innerText = `[${TIME_STAMP}] - ${messageContainer.sender}` + secret;
-
-                    log.className = "rumbleLog" + itMe;
-                    log.innerText = `•    ` + message as string;
-                    chatLog.append(author);
-                    chatLog.append(log);
-                    unread = !mine ? unread + 1 : unread;
-                }
-                else if (messageContainer.targetId == userId)
-                {
-                    // Whisper to the User
-                    author.className = "rumbleAuthor" + itMe;
-                    author.style.color = messageContainer.color;
-                    author.innerText = `[${TIME_STAMP}] - ${messageContainer.sender} to [You]`;
-
-                    log.className = "rumbleLog outline" + itMe;
-                    log.innerText = `•    ` + message as string;
-                    chatLog.append(author);
-                    chatLog.append(log);
-                    unread = unread + 1;
-                    whispered = true;
-                }
-
-            }
-        }
-
-        // Checks for Clash(Or Rumble Rolls) logs passing through - just a string, no sender
-        if (metadata[`${Constants.CLASHID}/metadata_chatlog`] != undefined)
-        {
-            const messageContainer = metadata[`${Constants.CLASHID}/metadata_chatlog`] as IChatLog;
-            if ((lastClashmessage.chatlog != messageContainer.chatlog
-                || lastClashmessage.sender != messageContainer.sender)
-                && (!IsThisOld(messageContainer.created)))
-            {
-                if (messageContainer.targetId == userId)
-                {
-                    lastClashmessage = messageContainer;
-                    const message = messageContainer.chatlog;
-
-                    const author = document.createElement('li');
-                    author.className = "rumbleAuthor clashLog";
-                    author.innerText = `[${TIME_STAMP}] - ${messageContainer.sender} to [You]`;
-
-                    const log = document.createElement('li');
-                    log.className = "clashLog";
-                    log.innerText = `🡆    ` + message as string;
-
-                    chatLog.append(author);
-                    chatLog.append(log);
-                }
-                else if (messageContainer.targetId == "0000")
-                {
-                    lastClashmessage = messageContainer;
-                    const message = messageContainer.chatlog;
-
-                    const author = document.createElement('li');
-                    author.className = "rumbleAuthor clashLog";
-                    author.innerText = `[${TIME_STAMP}] - ${messageContainer.sender}`;
-
-                    const log = document.createElement('li');
-                    log.className = "clashLog";
-                    log.innerText = `🡆    ` + message as string;
-
-                    chatLog.append(author);
-                    chatLog.append(log);
-                    unread = unread + 1;
-                }
-            }
-        }
-
-        // Checks for Outside Extension logs passing through
-        if (metadata[`${Constants.OUTSIDEID}/metadata_chatlog`] != undefined)
-        {
-            const messageContainer = metadata[`${Constants.OUTSIDEID}/metadata_chatlog`] as IChatLog;
-            if ((lastFriendmessage.chatlog != messageContainer.chatlog
-                || lastFriendmessage.sender != messageContainer.sender)
-                && (!IsThisOld(messageContainer.created)))
-            {
-                if (messageContainer.targetId == userId)
-                {
-                    lastFriendmessage = messageContainer;
-                    const message = messageContainer.chatlog;
-
-                    const author = document.createElement('li');
-                    author.className = "rumbleAuthor friendLog";
-                    author.innerText = `[${TIME_STAMP}] - ${messageContainer.sender} to [You]`;
-
-                    const log = document.createElement('li');
-                    log.className = "friendLog";
-                    log.innerText = `🢥    ` + message as string;
-
-                    chatLog.append(author);
-                    chatLog.append(log);
-                }
-                else if (messageContainer.targetId == "0000")
-                {
-                    lastFriendmessage = messageContainer;
-                    const message = messageContainer.chatlog;
-
-                    const author = document.createElement('li');
-                    author.className = "rumbleAuthor friendLog";
-                    author.innerText = `[${TIME_STAMP}] - ${messageContainer.sender}`;
-
-                    const log = document.createElement('li');
-                    log.className = "friendLog";
-                    log.innerText = `🢥    ` + message as string;
-
-                    chatLog.append(author);
-                    chatLog.append(log);
-                    unread = unread + 1;
-                }
-            }
-        }
-
-        if (metadata[`${Constants.EXTENSIONID}/metadata_chatSafety`] != undefined)
-        {
-            const playerRole = await OBR.player.getRole();
-            const safetyContainer = metadata[`${Constants.EXTENSIONID}/metadata_chatSafety`] as ISafety;
-            if (!IsThisOld(safetyContainer.created))
-            {
-                if (safetyContainer.safety == "bad")
-                {
-                    const author = document.createElement('li');
-                    const log = document.createElement('li');
-                    const TIME_STAMP = new Date().toLocaleTimeString();
-
-                    author.className = "rumbleAuthor clashLog";
-                    author.innerText = `[${TIME_STAMP}] - ❌ Full Stop ❌`;
-
-                    log.className = "clashLog";
-                    log.innerText = `🡆    Someone is concerned with the current situation. Talk it out.`;
-
-                    chatLog.append(author);
-                    chatLog.append(log);
-                    unread = unread + 1;
-                    whispered = true;
-                    OBR.popover.open({
-                        id: "com.battle-system.rumble",
-                        url: `/subindex/sub${safetyContainer.safety}.html`,
-                        height: 400,
-                        width: 400,
-                    });
-                }
-                if (safetyContainer.safety == "wary")
-                {
-                    const author = document.createElement('li');
-                    const log = document.createElement('li');
-                    const TIME_STAMP = new Date().toLocaleTimeString();
-
-                    author.className = "rumbleAuthor clashLog";
-                    author.innerText = `[${TIME_STAMP}] - 🟡 Let's be careful 🟡`;
-
-                    log.className = "clashLog";
-                    log.innerText = `🡆    Someone is starting to feel wary about what's going on.`;
-
-                    chatLog.append(author);
-                    chatLog.append(log);
-                    unread = unread + 1;
-                    whispered = true;
-
-                    OBR.popover.open({
-                        id: "com.battle-system.rumble",
-                        url: `/subindex/sub${safetyContainer.safety}.html`,
-                        height: 400,
-                        width: 400,
-                    });
-                }
-                if (playerRole == "GM" && safetyContainer.safety == "happy")
-                {
-                    const author = document.createElement('li');
-                    const log = document.createElement('li');
-                    const TIME_STAMP = new Date().toLocaleTimeString();
-
-                    author.className = "rumbleAuthor clashLog";
-                    author.innerText = `[${TIME_STAMP}] - ✅ Great Job! ✅`;
-
-                    log.className = "clashLog";
-                    log.innerText = `🡆    Someone has shown their approval!`;
-
-                    chatLog.append(author);
-                    chatLog.append(log);
-                    unread = unread + 1;
-
-                    OBR.popover.open({
-                        id: "com.battle-system.rumble",
-                        url: `/subindex/sub${safetyContainer.safety}.html`,
-                        height: 200,
-                        width: 200,
-                    });
-                }
-            }
-        }
-
-        if (isOpen)
-        {
-            whispered = false;
-            unread = 0;
-        }
-        // Update Badge for unread if Action isn't open
-        if (!isOpen && unread > 0)
-        {
-            await OBR.action.setIcon("/icon-filled.svg");
-            await OBR.action.setBadgeText(unread.toString());
-            if (whispered)
-            {
-                await OBR.action.setBadgeBackgroundColor("yellow");
-            }
-        }
-    });
 
     // Check for username updates
-    OBR.player.onChange((user) =>
+    OBR.player.onChange(async (user) =>
     {
         userName = user.name;
         userId = user.id;
         userColor = user.color;
+        await HandleMessage(user.metadata);
     });
 
     // Update the select for player changes
@@ -432,6 +157,12 @@ async function SetupOnChangeEvents()
     {
         gamePlayers = party.map(x => { return { id: x.id, name: x.name } });
         UpdatePlayerSelect();
+
+        // Check for messages on local player data, it has more space allowance
+        party.forEach(async (player) =>
+        {
+            await HandleMessage(player.metadata);
+        });
     });
 
     OBR.action.onOpenChange(async (open) =>
@@ -445,6 +176,252 @@ async function SetupOnChangeEvents()
             await OBR.action.setIcon("/icon.svg");
         }
     });
+}
+
+async function HandleMessage(metadata: Metadata)
+{
+    const chatLog = document.querySelector<HTMLDivElement>('#chatLog')!;
+    const isOpen = await OBR.action.isOpen();
+    const TIME_STAMP = new Date().toLocaleTimeString();
+
+    // Checks for own logs passing through
+    if (metadata[`${Constants.EXTENSIONID}/metadata_chatlog`] != undefined)
+    {
+        const messageContainer = metadata[`${Constants.EXTENSIONID}/metadata_chatlog`] as IChatLog;
+
+        if ((lastRumbleMessage.chatlog != messageContainer.chatlog
+            || lastRumbleMessage.sender != messageContainer.sender)
+            && (!IsThisOld(messageContainer.created)))
+        {
+            lastRumbleMessage = messageContainer;
+            const message = messageContainer.chatlog;
+            lastRumbleMessage = messageContainer;
+
+            // Flag to see if you're the sender
+            const mine = messageContainer.senderId == userId;
+            const author = document.createElement('li');
+            const log = document.createElement('li');
+
+            const itMe = mine ? " itsMe" : "";
+
+            // If you're the sender, or it's being sent to everyone.
+            if (messageContainer.senderId == userId
+                || messageContainer.targetId == "0000")
+            {
+                // This is a whisper
+                const secret = mine && (messageContainer.targetId != "0000")
+                    ? ` to [${messageContainer.target}]` : "";
+
+                author.className = "rumbleAuthor" + itMe;
+                author.style.color = messageContainer.color;
+                author.innerText = `[${TIME_STAMP}] - ${messageContainer.sender}` + secret;
+
+                log.className = "rumbleLog" + itMe;
+                log.innerText = `•    ` + message as string;
+                chatLog.append(author);
+                chatLog.append(log);
+                unread = !mine ? unread + 1 : unread;
+            }
+            else if (messageContainer.targetId == userId)
+            {
+                // Whisper to the User
+                author.className = "rumbleAuthor" + itMe;
+                author.style.color = messageContainer.color;
+                author.innerText = `[${TIME_STAMP}] - ${messageContainer.sender} to [You]`;
+
+                log.className = "rumbleLog outline" + itMe;
+                log.innerText = `•    ` + message as string;
+                chatLog.append(author);
+                chatLog.append(log);
+                unread = unread + 1;
+                whispered = true;
+            }
+
+        }
+    }
+
+    // Checks for Clash(Or Rumble Rolls) logs passing through - just a string, no sender
+    if (metadata[`${Constants.CLASHID}/metadata_chatlog`] != undefined)
+    {
+        const messageContainer = metadata[`${Constants.CLASHID}/metadata_chatlog`] as IChatLog;
+        if ((lastClashmessage.chatlog != messageContainer.chatlog
+            || lastClashmessage.sender != messageContainer.sender)
+            && (!IsThisOld(messageContainer.created)))
+        {
+            if (messageContainer.targetId == userId)
+            {
+                lastClashmessage = messageContainer;
+                const message = messageContainer.chatlog;
+
+                const author = document.createElement('li');
+                author.className = "rumbleAuthor clashLog";
+                author.innerText = `[${TIME_STAMP}] - ${messageContainer.sender} to [You]`;
+
+                const log = document.createElement('li');
+                log.className = messageContainer.critical ? "clashLog glow" : "clashLog";
+                log.innerText = `🡆    ` + message as string;
+
+                chatLog.append(author);
+                chatLog.append(log);
+            }
+            else if (messageContainer.targetId == "0000")
+            {
+                lastClashmessage = messageContainer;
+                const message = messageContainer.chatlog;
+
+                const author = document.createElement('li');
+                author.className = "rumbleAuthor clashLog";
+                author.innerText = `[${TIME_STAMP}] - ${messageContainer.sender}`;
+
+                const log = document.createElement('li');
+                log.className = messageContainer.critical ? "clashLog glow" : "clashLog";
+                log.innerText = `🡆    ` + message as string;
+
+                chatLog.append(author);
+                chatLog.append(log);
+                unread = unread + 1;
+            }
+        }
+    }
+
+    // Checks for Outside Extension logs passing through
+    if (metadata[`${Constants.OUTSIDEID}/metadata_chatlog`] != undefined)
+    {
+        const messageContainer = metadata[`${Constants.OUTSIDEID}/metadata_chatlog`] as IChatLog;
+        if ((lastFriendmessage.chatlog != messageContainer.chatlog
+            || lastFriendmessage.sender != messageContainer.sender)
+            && (!IsThisOld(messageContainer.created)))
+        {
+            if (messageContainer.targetId == userId)
+            {
+                lastFriendmessage = messageContainer;
+                const message = messageContainer.chatlog;
+
+                const author = document.createElement('li');
+                author.className = "rumbleAuthor friendLog";
+                author.innerText = `[${TIME_STAMP}] - ${messageContainer.sender} to [You]`;
+
+                const log = document.createElement('li');
+                log.className = "friendLog";
+                log.innerText = `🢥    ` + message as string;
+
+                chatLog.append(author);
+                chatLog.append(log);
+            }
+            else if (messageContainer.targetId == "0000")
+            {
+                lastFriendmessage = messageContainer;
+                const message = messageContainer.chatlog;
+
+                const author = document.createElement('li');
+                author.className = "rumbleAuthor friendLog";
+                author.innerText = `[${TIME_STAMP}] - ${messageContainer.sender}`;
+
+                const log = document.createElement('li');
+                log.className = "friendLog";
+                log.innerText = `🢥    ` + message as string;
+
+                chatLog.append(author);
+                chatLog.append(log);
+                unread = unread + 1;
+            }
+        }
+    }
+
+    if (metadata[`${Constants.EXTENSIONID}/metadata_chatSafety`] != undefined)
+    {
+        const playerRole = await OBR.player.getRole();
+        const safetyContainer = metadata[`${Constants.EXTENSIONID}/metadata_chatSafety`] as ISafety;
+        if (!IsThisOld(safetyContainer.created))
+        {
+            if (safetyContainer.safety == "bad")
+            {
+                const author = document.createElement('li');
+                const log = document.createElement('li');
+                const TIME_STAMP = new Date().toLocaleTimeString();
+
+                author.className = "rumbleAuthor clashLog";
+                author.innerText = `[${TIME_STAMP}] - ❌ Full Stop ❌`;
+
+                log.className = "clashLog";
+                log.innerText = `🡆    Someone is concerned with the current situation. Talk it out.`;
+
+                chatLog.append(author);
+                chatLog.append(log);
+                unread = unread + 1;
+                whispered = true;
+                OBR.popover.open({
+                    id: "com.battle-system.rumble",
+                    url: `/subindex/sub${safetyContainer.safety}.html`,
+                    height: 400,
+                    width: 400,
+                });
+            }
+            if (safetyContainer.safety == "wary")
+            {
+                const author = document.createElement('li');
+                const log = document.createElement('li');
+                const TIME_STAMP = new Date().toLocaleTimeString();
+
+                author.className = "rumbleAuthor clashLog";
+                author.innerText = `[${TIME_STAMP}] - 🟡 Let's be careful 🟡`;
+
+                log.className = "clashLog";
+                log.innerText = `🡆    Someone is starting to feel wary about what's going on.`;
+
+                chatLog.append(author);
+                chatLog.append(log);
+                unread = unread + 1;
+                whispered = true;
+
+                OBR.popover.open({
+                    id: "com.battle-system.rumble",
+                    url: `/subindex/sub${safetyContainer.safety}.html`,
+                    height: 400,
+                    width: 400,
+                });
+            }
+            if (playerRole == "GM" && safetyContainer.safety == "happy")
+            {
+                const author = document.createElement('li');
+                const log = document.createElement('li');
+                const TIME_STAMP = new Date().toLocaleTimeString();
+
+                author.className = "rumbleAuthor clashLog";
+                author.innerText = `[${TIME_STAMP}] - ✅ Great Job! ✅`;
+
+                log.className = "clashLog";
+                log.innerText = `🡆    Someone has shown their approval!`;
+
+                chatLog.append(author);
+                chatLog.append(log);
+                unread = unread + 1;
+
+                OBR.popover.open({
+                    id: "com.battle-system.rumble",
+                    url: `/subindex/sub${safetyContainer.safety}.html`,
+                    height: 200,
+                    width: 200,
+                });
+            }
+        }
+    }
+
+    if (isOpen)
+    {
+        whispered = false;
+        unread = 0;
+    }
+    // Update Badge for unread if Action isn't open
+    if (!isOpen && unread > 0)
+    {
+        await OBR.action.setIcon("/icon-filled.svg");
+        await OBR.action.setBadgeText(unread.toString());
+        if (whispered)
+        {
+            await OBR.action.setBadgeBackgroundColor("yellow");
+        }
+    }
 }
 
 function UpdatePlayerSelect()
@@ -496,14 +473,12 @@ async function SendtoChatLog(chatInput: HTMLInputElement): Promise<void>
         };
 
         chatInput.value = "";
-        return await OBR.scene.setMetadata(metadata);
+        return await OBR.player.setMetadata(metadata);
     }
 }
 
 async function SendRolltoChatLog(roll: string): Promise<void>
 {
-    if (!sceneReady) return;
-
     if (roll)
     {
         const metadata: Metadata = {};
@@ -520,7 +495,7 @@ async function SendRolltoChatLog(roll: string): Promise<void>
             color: userColor
         };
 
-        return await OBR.scene.setMetadata(metadata);
+        return await OBR.player.setMetadata(metadata);
     }
 }
 
