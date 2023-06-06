@@ -556,12 +556,12 @@ async function SetupDiceBox()
         {
             const tB = document.querySelector<HTMLInputElement>('#throwButton')!;
             const rB = document.querySelector<HTMLInputElement>('#resetButton')!;
-            tB.disabled = false;
-            rB.disabled = false;
             let messageResult = ParseResultsToString(results);
             await SendRolltoChatLog(messageResult);
             await delay(2000);
             dicePicker.updateNotation(true);
+            tB.disabled = false;
+            rB.disabled = false;
         }
     });
 }
