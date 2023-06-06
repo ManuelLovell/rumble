@@ -108,6 +108,10 @@ class DiceUIPicker
         form.addEventListener('submit', (e) =>
         {
             e.preventDefault();
+            const notationText = this.output!.innerHTML;
+            
+            if (notationText == "Use Buttons to Roll") return;
+
             this.onSubmit(this.DRP.parseNotation(this.output!.innerHTML));
         });
 
