@@ -1,6 +1,7 @@
 import { Constants } from './constants';
 import { IChatLog, IPlayer, ISafety } from './interfaces';
 import DiceUIPicker from './dice-ui';
+import { DiceRollResult, DiceRoller, DieRoll } from "dice-roller-parser";
 import OBR, { Metadata } from "@owlbear-rodeo/sdk";
 import DiceBox from "@3d-dice/dice-box";
 import * as Utilities from "./utilities";
@@ -19,7 +20,6 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
         <label for="players">${mobile ? "Send:" : "Send Message To:"}</label>
 
         <select name="players" id="playerSelect">
-            <option value="everyone">Everyone</option>
         </select>
         <div id="safetyButtons">${mobile ? "" : "Safety:"}
             <button id="happyButton" type="button">✔</button>
@@ -44,6 +44,10 @@ let gamePlayers: IPlayer[] = [];
 let lastRumbleMessage: IChatLog = { chatlog: "", sender: "", created: "", color: "" };
 let lastClashmessage: IChatLog = { chatlog: "", sender: "", created: "", color: "" };
 let lastFriendmessage: IChatLog = { chatlog: "", sender: "", created: "", color: "" };
+
+const slashWhisperRegex = /^\/whisper (\w+) (.+)$/;
+const slashWRegex = /^\/w (\w+) (.+)$/;
+const rollCommand = "/roll ";
 
 let diceBox;
 
@@ -426,7 +430,8 @@ async function HandleMessage(metadata: Metadata)
 
 function UpdatePlayerSelect()
 {
-    const playerSelect = document.querySelector<HTMLDivElement>('#playerSelect')!;
+    const playerSelect = <HTMLSelectElement>document.getElementById("playerSelect");
+    let lastTarget = playerSelect.value;
 
     const everyoneOption = document.createElement("option");
     everyoneOption.setAttribute('value', "0000");
@@ -447,13 +452,98 @@ function UpdatePlayerSelect()
 
         playerSelect.appendChild(option);
     });
+
+    const lastTargetConnected = gamePlayers.find(player => player.id === lastTarget);
+    if (!lastTargetConnected && lastTarget && lastTarget !== "0000")
+    {
+        let option = document.createElement("option");
+        option.setAttribute('value', lastTarget);
+
+        let optionText = document.createTextNode("(Disconnected)");
+        option.appendChild(optionText);
+
+        playerSelect.appendChild(option);
+        playerSelect.value = lastTarget;
+    }
+    else if (lastTarget)
+    {
+        playerSelect.value = lastTarget;
+    }
+}
+async function SendSlashWhispertoChatLog(matches: RegExpMatchArray | null, chatInput: HTMLInputElement)
+{
+    if (matches)
+    {
+        const mPlayer = matches[1];
+        const mMessage = matches[2];
+        const foundPlayer = gamePlayers.find(player => player.name.toLowerCase() === mPlayer.toLowerCase());
+        if (foundPlayer && mMessage)
+        {
+            const metadata: Metadata = {};
+            const now = new Date().toISOString();
+
+            metadata[`${Constants.EXTENSIONID}/metadata_chatlog`]
+                = {
+                chatlog: mMessage,
+                sender: userName,
+                senderId: userId,
+                target: foundPlayer.name,
+                targetId: foundPlayer.id,
+                created: now,
+                color: userColor
+            };
+
+            chatInput.value = "";
+            return await OBR.player.setMetadata(metadata);
+        }
+    }
 }
 
 async function SendtoChatLog(chatInput: HTMLInputElement): Promise<void>
 {
-    if (chatInput.value)
+    // If no messages, Just leave.
+    if (!chatInput.value) return;
+
+    if (chatInput.value.startsWith("/whisper"))
     {
-        //playerSelect
+        // If this is a slash command whisper, send it
+        const matches = chatInput.value.match(slashWhisperRegex);
+        await SendSlashWhispertoChatLog(matches, chatInput);
+    }
+    else if (chatInput.value.startsWith("/w"))
+    {
+        // Short hand whisper
+        const matches = chatInput.value.match(slashWRegex);
+        await SendSlashWhispertoChatLog(matches, chatInput);
+    }
+    else if (chatInput.value.startsWith(rollCommand))
+    {
+        const rollInfo = chatInput.value.substring(rollCommand.length);
+        const diceRoller = new DiceRoller();
+
+        try
+        {
+            //	Returns an object representing the dice roll, use to display the component parts of the roll
+            const rollObject = diceRoller.roll(rollInfo) as DiceRollResult;
+
+            let diceRolled: string[] = [];
+            rollObject.rolls.forEach((rl) =>
+            {
+                const roll = rl as DieRoll;
+                diceRolled.push(`[${roll.critical === "success" ? "💥" : ""}${roll.value}${roll.valid ? "" : "✕"}]`);
+            });
+            const message = ` rolled [${rollInfo}] → ${diceRolled.join(", ")} for ${rollObject.value}!`;
+            await SendRolltoChatLog(message);
+            chatInput.value = "";
+        } 
+        catch (error)
+        {
+            console.log("Rumble was unable to parse that roll notation.")
+        }
+    }
+    else
+    {
+        // Check playerSelect
         const pS = <HTMLSelectElement>document.getElementById("playerSelect");
         const targetId = pS.value;
         const targetText = pS.options[pS.selectedIndex].text;
