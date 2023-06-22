@@ -1,6 +1,6 @@
 ---
 title: Rumble!
-description: Chat and Safety Cards
+description: Chat interface with direct messaging, safety cards and dice rolling
 author: Battle-System
 image: https://battle-system.com/owlbear/rumble-docs/preview.png
 icon: https://battle-system.com/owlbear/rumble-docs/logo.png
@@ -36,3 +36,10 @@ Safety Cards work slightly different from each other, but are all anonymous.
 **Support**
 
 If you have questions, please join the [Owlbear Rodeo Discord](https://discord.gg/UY8AXjhzhe).
+
+**Changes**
+- v1.0.2 - Theme update.
+
+- v1.0.1 - Fixed a bug with the Direct Message selector resetting whenever the player list was refreshed.
+-        - Added chat commands for /whisper or /w (player name) for quicker messaging without using the selector.
+-        - Added D20 dice commands /roll, which should support the range of Roll20 style dice notations.

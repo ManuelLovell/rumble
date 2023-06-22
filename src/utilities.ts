@@ -16,10 +16,10 @@ export function SetThemeMode(theme: Theme, document: Document): void
 {
     const darkThemeMq = window.matchMedia("(prefers-color-scheme: dark)");
     console.log(darkThemeMq.matches);
-    
+
     const darkTheme = darkThemeMq.matches ? "dark" : "light";
     const lightTheme = darkThemeMq.matches ? "light" : "dark";
-    
+
     for (var s = 0; s < document.styleSheets.length; s++)
     {
         for (var i = 0; i < document.styleSheets[s].cssRules.length; i++)
@@ -48,5 +48,29 @@ export function SetThemeMode(theme: Theme, document: Document): void
                 }
             }
         }
+    }
+}
+
+export function evaluateMathExpression(command: string): number | string
+{
+    // Remove the "/math" part and any leading/trailing whitespaces
+    const expression = command.replace("/math", "").trim();
+
+    // Validate the expression
+    const validExpressionRegex = /^[-+*/()\d\s]+$/;
+    if (!validExpressionRegex.test(expression))
+    {
+        return "That's not math. (Invalid expression.)";
+    }
+
+    try
+    {
+        // Evaluate the expression using the eval() function
+        const result = eval(expression);
+        return `The answer to ${expression} is ${result}.`;
+    } 
+    catch (e)
+    {
+        return `Error: ${e}`;
     }
 }

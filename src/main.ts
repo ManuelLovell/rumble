@@ -8,6 +8,7 @@ import * as Utilities from "./utilities";
 import './style.css';
 
 const mobile = window.innerWidth < Constants.MOBILEWIDTH;
+let currentTheme: "LIGHT" | "DARK";
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 <header id="headerContainer" class="headerContainer"></header>
 <section id="chatContainer" class="chatContainer">
@@ -17,17 +18,17 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 </section>
 <div class="inputContainer">
     <div id="targetSelect">
-        <label for="players">${mobile ? "Send:" : "Send Message To:"}</label>
+        <label for="players">${mobile ? "Send:" : "Send To:"}</label>
 
         <select name="players" id="playerSelect">
         </select>
         <div id="safetyButtons">${mobile ? "" : "Safety:"}
-            <button id="happyButton" type="button">✔</button>
-            <button id="waryButton" type="button">◯</button>
-            <button id="badButton" type="button">✕</button>
+            <button id="happyButton" type="button"><embed class="svg" src="/check.svg" /></button>
+            <button id="waryButton" type="button"><embed class="svg" src="/circle.svg" /></button>
+            <button id="badButton" type="button"><embed class="svg" src="/cross.svg" /></button>
         </div>
     </div>
-    <div>
+    <div id="chatInputContainer">
     <input id="chat-input" class="chatInput" type="text" name="message" placeholder="Type Message ..." class="form-control">
         <span>
             <button id="chat-button" type="button" class="button">Send</button>
@@ -55,9 +56,11 @@ await OBR.onReady(async () =>
 {
     // Set theme accordingly
     const theme = await OBR.theme.getTheme();
+    currentTheme = theme.mode;
     Utilities.SetThemeMode(theme, document);
     OBR.theme.onChange((theme) =>
     {
+        currentTheme = theme.mode;
         Utilities.SetThemeMode(theme, document);
     })
 
@@ -422,8 +425,9 @@ async function HandleMessage(metadata: Metadata)
         await OBR.action.setIcon("/icon-filled.svg");
         await OBR.action.setBadgeText(unread.toString());
         if (whispered)
-        {
-            await OBR.action.setBadgeBackgroundColor("yellow");
+        {   
+            const badgeColor = currentTheme == "DARK" ? "yellow" : "#159cc5";
+            await OBR.action.setBadgeBackgroundColor(badgeColor);
         }
     }
 }
@@ -516,6 +520,12 @@ async function SendtoChatLog(chatInput: HTMLInputElement): Promise<void>
         const matches = chatInput.value.match(slashWRegex);
         await SendSlashWhispertoChatLog(matches, chatInput);
     }
+    else if (chatInput.value.startsWith("/math"))
+    {
+        const answer = Utilities.evaluateMathExpression(chatInput.value).toString();
+        await SendMathtoChatLog(answer);
+        chatInput.value = "";
+    }
     else if (chatInput.value.startsWith(rollCommand))
     {
         const rollInfo = chatInput.value.substring(rollCommand.length);
@@ -589,6 +599,28 @@ async function SendRolltoChatLog(roll: string): Promise<void>
     }
 }
 
+async function SendMathtoChatLog(answer: string): Promise<void>
+{
+    if (answer)
+    {
+        const metadata: Metadata = {};
+        const now = new Date().toISOString();
+
+        metadata[`${Constants.CLASHID}/metadata_chatlog`]
+            = {
+            chatlog: answer,
+            sender: "Rumble!",
+            senderId: userId,
+            target: "",
+            targetId: "0000",
+            created: now,
+            color: userColor
+        };
+
+        return await OBR.player.setMetadata(metadata);
+    }
+}
+
 function ParseResultsToString(results: []): string
 {
     let diceRolled: string[] = [];
@@ -614,7 +646,7 @@ function ParseResultsToString(results: []): string
 async function SetupDiceBox()
 {
     //dice test
-    diceBox = new DiceBox("#diceContainer", { id: "diceContainer", assetPath: "/assets/", scale: 15, gravity: 5, theme: 'default', themeColor: '#ff9294' });
+    diceBox = new DiceBox("#diceContainer", { id: "diceContainer", assetPath: "/assets/", scale: 15, gravity: 5, theme: 'default', themeColor: '#159cc5' });
 
     diceBox.init().then(() =>
     {
