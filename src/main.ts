@@ -612,7 +612,7 @@ async function SendMathtoChatLog(answer: string): Promise<void>
             sender: "Rumble!",
             senderId: userId,
             target: "",
-            targetId: "0000",
+            targetId: userId,
             created: now,
             color: userColor
         };
