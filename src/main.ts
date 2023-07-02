@@ -1,7 +1,7 @@
 import { Constants } from './constants';
 import { IChatLog, IPlayer, ISafety } from './interfaces';
 import DiceUIPicker from './dice-ui';
-import { DiceRollResult, DiceRoller, DieRoll } from "dice-roller-parser";
+import { DiceExpressionRoll, DiceRollResult, DiceRoller, DieRoll } from "dice-roller-parser";
 import OBR, { Metadata } from "@owlbear-rodeo/sdk";
 import DiceBox from "@3d-dice/dice-box";
 import * as Utilities from "./utilities";
@@ -425,7 +425,7 @@ async function HandleMessage(metadata: Metadata)
         await OBR.action.setIcon("/icon-filled.svg");
         await OBR.action.setBadgeText(unread.toString());
         if (whispered)
-        {   
+        {
             const badgeColor = currentTheme == "DARK" ? "yellow" : "#159cc5";
             await OBR.action.setBadgeBackgroundColor(badgeColor);
         }
@@ -533,19 +533,55 @@ async function SendtoChatLog(chatInput: HTMLInputElement): Promise<void>
 
         try
         {
-            //	Returns an object representing the dice roll, use to display the component parts of the roll
-            const rollObject = diceRoller.roll(rollInfo) as DiceRollResult;
+            //Returns an object representing the dice roll, use to display the component parts of the roll
+            const rollObject = diceRoller.roll(rollInfo) as any;
 
             let diceRolled: string[] = [];
-            rollObject.rolls.forEach((rl) =>
+            if (rollObject.type == "die")
             {
-                const roll = rl as DieRoll;
-                diceRolled.push(`[${roll.critical === "success" ? "💥" : ""}${roll.value}${roll.valid ? "" : "✕"}]`);
-            });
-            const message = ` rolled [${rollInfo}] → ${diceRolled.join(", ")} for ${rollObject.value}!`;
+                const dieRoll = rollObject as DiceRollResult;
+                dieRoll.rolls.forEach((rl) =>
+                {
+                    const roll = rl as DieRoll;
+                    diceRolled.push(`[${roll.critical === "success" ? "💥" : ""}${roll.value}${roll.valid ? "" : "✕"}]`);
+                });
+            }
+            else if (rollObject.type == "number")
+            {
+                // Do nothing
+            }
+            else
+            {
+                const expressionRoll = rollObject as DiceExpressionRoll;
+                expressionRoll.dice.forEach(async (dice) =>
+                {
+                    const eDieRoll = dice as DiceRollResult;
+                    if (eDieRoll.rolls?.length > 0)
+                    {
+                        eDieRoll.rolls.forEach((rl) => 
+                        {
+                            const roll = rl as DieRoll;
+                            diceRolled.push(`[D${roll.die }⮞${roll.critical === "success" ? "💥" : ""}${roll.value}${roll.valid ? "" : "✕"}]`);
+                        });
+                    }
+                });
+            }
+
+            // Starting roll mesage
+            let message = " rolled ";
+            let rollInput = rollInfo;
+            // Remove the label from the string
+            // Add label name
+            if (rollObject.label)
+            {
+                rollInput = rollInfo.replace(rollObject.label, "");
+                message += "⭐" + rollObject.label + "⭐";
+            }
+            // Append results
+            message += `[${rollInput}] → ${diceRolled.join(", ")} for ${rollObject.value}!`;
             await SendRolltoChatLog(message);
             chatInput.value = "";
-        } 
+        }
         catch (error)
         {
             console.log("Rumble was unable to parse that roll notation.")
