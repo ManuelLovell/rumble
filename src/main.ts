@@ -1,5 +1,5 @@
 import { Constants } from './constants';
-import { IChatLog, IPlayer, ISafety } from './interfaces';
+import { IChatLog, IPlayer, ISafety, IWebhook } from './interfaces';
 import DiceUIPicker from './dice-ui';
 import { DiceExpressionRoll, DiceRollResult, DiceRoller, DieRoll } from "dice-roller-parser";
 import OBR, { Metadata } from "@owlbear-rodeo/sdk";
@@ -29,8 +29,9 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
         </div>
     </div>
     <div id="chatInputContainer">
+    <button id="discordButton" type="button" title="Hook to Discord"><embed class="svg" src="/discord2.svg" /></button>
     <input id="chat-input" class="chatInput" type="text" name="message" placeholder="Type Message ..." class="form-control">
-        <span>
+        <span id="chatButtonContainer">
             <button id="chat-button" type="button" class="button">Send</button>
         </span>
     </div>
@@ -39,6 +40,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 let userName = "";
 let userId = "";
 let userColor = "";
+let discordHook = "";
 let unread = 0;
 let whispered = false;
 let gamePlayers: IPlayer[] = [];
@@ -56,6 +58,12 @@ await OBR.onReady(async () =>
 {
     // Set theme accordingly
     const theme = await OBR.theme.getTheme();
+    const roomData = await OBR.room.getMetadata();
+    if (roomData[`${Constants.DISCORDID}/metadata_webhook`] != undefined)
+    {
+        const webhookContainer = roomData[`${Constants.DISCORDID}/metadata_webhook`] as IWebhook;
+        discordHook = webhookContainer.url;
+    }
     currentTheme = theme.mode;
     Utilities.SetThemeMode(theme, document);
     OBR.theme.onChange((theme) =>
@@ -133,6 +141,17 @@ function SetupSendButtons()
             await SendtoChatLog(chatInput);
         }
     };
+
+    const discordButton = document.querySelector<HTMLDivElement>('#discordButton')! as HTMLInputElement;
+    discordButton.onclick = async function ()
+    {
+        OBR.popover.open({
+            id: Constants.DISCORDID,
+            url: `/subindex/discordhook.html`,
+            height: 220,
+            width: 400
+        });
+    }
 }
 
 function IsThisOld(created: string): boolean
@@ -149,6 +168,15 @@ function IsThisOld(created: string): boolean
 
 async function SetupOnChangeEvents()
 {
+    // Check for webhook changes
+    OBR.room.onMetadataChange((metadata: Metadata) =>
+    {
+        if (metadata[`${Constants.DISCORDID}/metadata_webhook`] != undefined)
+        {
+            const webhookContainer = metadata[`${Constants.DISCORDID}/metadata_webhook`] as IWebhook;
+            discordHook = webhookContainer.url;
+        }
+    });
 
     // Check for username updates
     OBR.player.onChange(async (user) =>
@@ -503,6 +531,26 @@ async function SendSlashWhispertoChatLog(matches: RegExpMatchArray | null, chatI
     }
 }
 
+async function SendtoDiscord(message: string): Promise<void>
+{
+    // If the hook is empty, leave
+    if (!discordHook) return;
+
+    // Send the message to Discord
+    const request = new XMLHttpRequest();
+      request.open("POST", discordHook);
+
+      request.setRequestHeader('Content-type', 'application/json');
+
+      const params = {
+        username: "Rumble! : " + userName,
+        avatar_url: "https://battle-system.com/owlbear/rumble-docs/logo.png",
+        content: message
+      }
+
+      request.send(JSON.stringify(params));
+}
+
 async function SendtoChatLog(chatInput: HTMLInputElement): Promise<void>
 {
     // If no messages, Just leave.
@@ -608,6 +656,8 @@ async function SendtoChatLog(chatInput: HTMLInputElement): Promise<void>
             color: userColor
         };
 
+        if (targetId === "0000") await SendtoDiscord(chatInput.value);
+
         chatInput.value = "";
         return await OBR.player.setMetadata(metadata);
     }
@@ -631,6 +681,7 @@ async function SendRolltoChatLog(roll: string): Promise<void>
             color: userColor
         };
 
+        await SendtoDiscord(userName + roll);
         return await OBR.player.setMetadata(metadata);
     }
 }

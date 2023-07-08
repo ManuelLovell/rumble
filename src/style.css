@@ -25,7 +25,7 @@
 
     --dice-color: #159cc5;
     --BS-red: #A73335;
-    --chat-input-width: 80%;
+    --chat-input-width: 75%;
     --app-width: 499px;
     --header-min-width: 500px;
     --roller-padding: 4px 16px 4px 16px;
@@ -59,7 +59,7 @@
 
 @media only screen and (max-width: 495px) {
     :root {
-        --chat-input-width: 75%;
+        --chat-input-width: 65%;
         --app-width: 99.8%;
         --header-min-width: 100%;
         --roller-padding: 4px 0 4px 0px;
@@ -151,7 +151,21 @@ select option
     padding-right: 5px;
 }
 
-
+#chatButtonContainer
+{
+    width: 25%;
+}
+#discordButton
+{
+    float: left;
+    height: 32px;
+    width: 32px;
+    padding-top: 1px;
+    background-color: var(--OBR-dark-blue-trans);
+    border-radius: 30px;
+    border-style: none;
+    cursor: pointer;
+}
 #chat-input {
     width: var(--chat-input-width);
     height: 100%;

@@ -32,3 +32,8 @@ export interface ISafety
     safety: string;
     created: string;
 }
+
+export interface IWebhook
+{
+    url: string;
+}
